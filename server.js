@@ -17,8 +17,12 @@ app.get('/predict', async (req, res) => {
         const stockPrice = response.data.quoteResponse.result[0].regularMarketPrice;
 
         // Run Python script for prediction
+
         const scriptPath = path.join(__dirname, 'backend', 'stock_prediction.py');
+           console.log("Python script path:", scriptPath);
         const options = { args: [stockPrice] };
+
+       
 
         PythonShell.run(scriptPath, options, (err, result) => {
             if (err) {
