@@ -4,12 +4,12 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM
+from tensorflow.keras.layers import LSTM, Dense
 
 # Get stock price from argument
 stock_price = float(sys.argv[1])
 
-# Fetch last 10 minutes stock data for prediction
+# Fetch last 10 minutes stock data
 def get_live_stock_data(stock_symbol="RELIANCE.NS"):
     stock = yf.Ticker(stock_symbol)
     data = stock.history(period="1d", interval="1m")
@@ -32,13 +32,12 @@ def build_lstm_model():
     model = Sequential([
         LSTM(50, return_sequences=True, input_shape=(10, 1)),
         LSTM(50),
-        LSTM(50),
         Dense(1, activation="linear")
     ])
     model.compile(loss="mse", optimizer="adam")
     return model
 
-# Main Function
+# Run prediction
 def run_prediction():
     data = get_live_stock_data()
     X, y, scaler = preprocess_data(data.values)
@@ -47,17 +46,16 @@ def run_prediction():
     X = X.reshape((X.shape[0], X.shape[1], 1))
 
     model = build_lstm_model()
-    model.fit(X, y, epochs=10, batch_size=1, verbose=2)
+    model.fit(X, y, epochs=10, batch_size=1, verbose=0)
 
     # Predict next stock price
     last_10_min_data = X[-1].reshape(1, 10, 1)
     predicted_price = model.predict(last_10_min_data)
     predicted_price = scaler.inverse_transform(predicted_price.reshape(-1, 1))
 
-    # Return prediction
-    return predicted_price[0][0]
+    # Print prediction (sent to Node.js)
+    print(predicted_price[0][0])
 
-# Run and print prediction
+# Run main function
 if _name_ == "_main_":
-    predicted_price = run_prediction()
-    print(predicted_price)  # This will be passed back to Node.js
+    run_prediction()
