@@ -6,16 +6,16 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 
-# Get stock price from argument
+# CLI Argument से Stock Price
 stock_price = float(sys.argv[1])
 
-# Fetch last 10 minutes stock data
+# पिछले 10 मिनट के डेटा को Yahoo Finance से लाओ
 def get_live_stock_data(stock_symbol="RELIANCE.NS"):
     stock = yf.Ticker(stock_symbol)
     data = stock.history(period="1d", interval="1m")
     return data[['Close']]
 
-# Preprocess the data
+# Data Preprocessing
 def preprocess_data(data, time_steps=10):
     scaler = MinMaxScaler(feature_range=(0, 1))
     data_scaled = scaler.fit_transform(data)
@@ -27,7 +27,7 @@ def preprocess_data(data, time_steps=10):
     
     return np.array(X), np.array(y), scaler
 
-# Build LSTM Model
+# LSTM Model बनाना
 def build_lstm_model():
     model = Sequential([
         LSTM(50, return_sequences=True, input_shape=(10, 1)),
@@ -37,25 +37,25 @@ def build_lstm_model():
     model.compile(loss="mse", optimizer="adam")
     return model
 
-# Run prediction
+# Prediction Function
 def run_prediction():
     data = get_live_stock_data()
     X, y, scaler = preprocess_data(data.values)
 
-    # Reshape for LSTM Model
+    # LSTM Model के लिए Shape ठीक करो
     X = X.reshape((X.shape[0], X.shape[1], 1))
 
     model = build_lstm_model()
     model.fit(X, y, epochs=10, batch_size=1, verbose=0)
 
-    # Predict next stock price
+    # अगली स्टॉक प्राइस प्रेडिक्ट करो
     last_10_min_data = X[-1].reshape(1, 10, 1)
     predicted_price = model.predict(last_10_min_data)
     predicted_price = scaler.inverse_transform(predicted_price.reshape(-1, 1))
 
-    # Print prediction (sent to Node.js)
+    # Prediction Print करो (Node.js को भेजने के लिए)
     print(predicted_price[0][0])
 
-# Run main function
+# Main Function चलाओ
 if _name_ == "_main_":
     run_prediction()
