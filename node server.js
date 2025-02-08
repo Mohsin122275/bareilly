@@ -4,7 +4,7 @@ const { PythonShell } = require('python-shell');
 const path = require('path');
 
 const app = express();
-const port = process.env.PORT || 3000;  // Render के लिए पोर्ट सेट करें
+const port = process.env.PORT || 3000;
 
 // Static files serve करें
 app.use(express.static('frontend'));
@@ -20,13 +20,16 @@ app.get('/predict', async (req, res) => {
 
         let options = { args: [stockPrice] };
 
-        PythonShell.run(scriptPath, options).then(messages => {
-            res.json({ currentPrice: stockPrice, prediction: messages[0] });
-        }).catch(err => {
-            console.error("Python script error:", err);
-            res.status(500).json({ error: "Python script failed" });
+        // Python script execute करें
+        PythonShell.run(scriptPath, options, (err, messages) => {
+            if (err) {
+                console.error("Python script error:", err);
+                return res.status(500).json({ error: "Python script failed" });
+            }
+
+            res.json({ currentPrice: stockPrice, prediction: messages ? messages[0] : "No Prediction" });
         });
-        
+
     } catch (error) {
         console.error("Stock API Error:", error);
         res.status(500).json({ error: "Failed to fetch stock data" });
@@ -36,3 +39,4 @@ app.get('/predict', async (req, res) => {
 // Server Start
 app.listen(port, () => {
     console.log(Server running at http://localhost:${port});
+});
