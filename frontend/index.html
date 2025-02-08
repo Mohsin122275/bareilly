@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        #prediction {
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stock Market Prediction</h1>
+    <p>Stock: Reliance (NSE)</p>
+    <p>Current Price: <span id="currentPrice">Loading...</span></p>
+    <p>Prediction for Next 10 Minutes: <span id="prediction">Loading...</span></p>
+
+    <script>
+        async function fetchPrediction() {
+            try {
+                const response = await fetch('/predict');
+                const data = await response.json();
+
+                document.getElementById('currentPrice').innerText = data.currentPrice;
+                document.getElementById('prediction').innerText = data.prediction;
+            } catch (error) {
+                console.error("Error fetching prediction:", error);
+            }
+        }
+
+        setInterval(fetchPrediction, 600000);  // हर 10 मिनट में नया डेटा
+        fetchPrediction();  // पेज लोड होते ही पहली बार डेटा लाओ
+    </script>
+</body>
+</html>
