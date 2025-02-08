@@ -57,5 +57,5 @@ def run_prediction():
     print(predicted_price[0][0])
 
 # Main Function चलाओ
-if _name_ == "_main_":
+if __name__ == "__main__":
     run_prediction()
